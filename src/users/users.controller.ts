@@ -18,27 +18,4 @@ export class UsersController {
       message: 'Usuária criada com sucesso',
     };
   }
-
-  @common.Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @common.Get(':id')
-  findOne(@common.Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @common.Patch(':id')
-  update(
-    @common.Param('id') id: string,
-    @common.Body() updateUserDto: UpdateUserDto,
-  ) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @common.Delete(':id')
-  remove(@common.Param('id') id: string) {
-    return this.usersService.remove(+id);
-  }
 }

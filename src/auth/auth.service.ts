@@ -1,26 +1,37 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
+import { CredentialsDto } from './dto/credentials.dto';
+import { JwtService } from '@nestjs/jwt'
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor( 
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+  
+  async signUp(createUserDto: CreateUserDto): Promise<User> {
+    if (createUserDto.password != createUserDto.passwordConfirmation) {
+      throw new UnprocessableEntityException('As senhas não conferem');
+    } else {
+      return await this.usersService.create(createUserDto)
+    }
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async signIn(credentialsDto: CredentialsDto) {
+    const user = await this.usersService.checkCredentials(credentialsDto);
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    if (user === null) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    const jwtPayload = {
+      id: user.id,
+    };
+    const token = await this.jwtService.sign(jwtPayload);
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    return { token };
   }
 }
